@@ -1,0 +1,83 @@
+﻿@page "/login"
+@inject CustomAuthProvider authStateProvider
+@inject NavigationManager navigationManager
+
+<div class="form-container m-auto">
+    <EditForm class="w-100 text-center" Context="context1" Model="@model" OnValidSubmit="OnSubmit">
+        <div class="modal-header justify-content-center mb-3">
+            <h5 class="modal-title" id="exampleModalLabel">
+                <span class="color-effect">Вход на сайт </span>👋
+            </h5>
+        </div>
+        <div class="modal-body w-100 d-flex flex-column align-items-center">
+            <ValidationSummary />
+            <div class="form-floating w-75 mb-2">
+                <input type="text" class="form-control form-control-lg " id="floatingInput"
+                       placeholder="name@example.com" @bind-value="model.UserName" />
+                <label for="floatingInput">Имя</label>
+            </div>
+            <div class="form-floating w-75 mb-2">
+                <input type="password" class="form-control form-control-lg " id="floatingPassword"
+                       placeholder="Password" @bind-value="model.Password" />
+                <label for="floatingPassword">Пароль</label>
+            </div>
+
+            @if (error is not null)
+            {
+                <div class="px-3 py-2 rounded-5 errormesage">@error</div>
+            }
+        </div>
+        @if (loading)
+        {
+            <button class="btn btn-outline-warning w-50 m-auto my-4" type="button" disabled>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Loging...
+            </button>
+        }
+        else
+        {
+            <button type="submit" class="btn btn-outline-warning w-50 my-4">
+                Войти
+            </button>
+        }
+</EditForm>
+</div>
+
+
+@code {
+    LoginRequest model { get; set; } = new LoginRequest();
+    string? error { get; set; }
+    bool loading { get; set; } = false;
+    string modalshow { get; set; } = "show";
+
+    void ShowModal()
+    {
+        modalshow = "show";
+        //StateHasChanged();
+    }
+
+    void HideModal()
+    {
+        modalshow = "";
+    }
+
+    async Task OnSubmit()
+    {
+        error = null;
+        loading = true;
+        try
+        {
+            await authStateProvider.Login(model);
+            loading = false;
+            navigationManager.NavigateTo("/");
+            modalshow = "";
+        }
+        catch (Exception ex)
+        {
+            loading = false;
+            //modalshow = "";
+            error = ex.Message;
+        }
+    }
+
+}

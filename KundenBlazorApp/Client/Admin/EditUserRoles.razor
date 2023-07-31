@@ -1,0 +1,156 @@
+﻿@page "/adminka/editusersroles/{userid}"
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@inject HttpClient Http
+@inject NavigationManager navManager
+@inject ILogger<Index> Logger
+@implements IDisposable
+
+<div></div>
+<div>
+    @if (user is null)
+    {
+        <div>loading...</div>
+    }
+    else
+    {
+        <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator />
+            <p>
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <label class="col-form-label">User name: </label>
+                    </div>
+                    <div class="col-auto text-primary">
+                        <h2>@user.userName</h2>
+                    </div>
+                </div>
+                @foreach (var role in allRoles)
+                {
+                    <div>
+                        <input id="@role.Key" class="form-check-input" type="checkbox" @bind="@allRoles[role.Key]" />
+                        <label for="@role.Key" class="form-check-label">@role.Key</label>
+                    </div>
+                }
+            </p>
+            <div class="d-flex justify-content-around">
+                @if (isSaving)
+                {
+                    <button class="btn btn-outline-primary" type="submit" disabled>
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">saving...</span>
+                        </div>
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-outline-primary" type="submit">Сохранить</button>
+                }
+                <button type="button" class="btn btn-outline-success" @onclick="Back">Назад</button>
+            </div>
+            <ValidationSummary />
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? userid { get; set; }
+
+    bool isBool1 = false;
+    bool isSaving = false;
+
+    UserWidthRoles? user;
+    Dictionary<string, bool> allRoles { get; set; } = new();
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(userid))
+        {
+            user = await Http.GetFromJsonAsync<UserWidthRoles>($"api/auth/usersroles/{userid}");
+            if (user is not null)
+            {
+                editContext = new(user);
+                editContext.OnValidationRequested += HandleValidationRequested;
+                messageStore = new(editContext);
+
+                allRoles = new();
+                foreach (Role role in Enum.GetValues(typeof(Role)))
+                {
+                    if (role != Role.pichugina)
+                    {
+                        var str = role.ToString();
+                        if (user.roles.Contains(str))
+                        {
+                            allRoles.Add(str, true);
+                            //allBools.Add(true);
+                        }
+                        else
+                        {
+                            allRoles.Add(str, false);
+                            //allBools.Add(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (user is not null)
+        {
+            editContext = new(user);
+            editContext.OnValidationRequested += HandleValidationRequested;
+            messageStore = new(editContext);
+        }
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+        var ch = allRoles.Where(r => r.Value == true).ToArray().Count();
+        if (ch < 1)
+        {
+            messageStore?.Add(() => user.roles, "Не выбрано ничего !");
+            Logger.LogInformation("Не выбрано ничего !");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            isSaving = true;
+            //Logger.LogInformation($"user: {user.userName}, {allRoles.Where(r => r.Value == true).ToArray().Count()}");
+            var ch = allRoles.Where(r => r.Value == true).ToDictionary(k => k.Key);
+
+            // Process the valid form
+            await Http.PutAsJsonAsync($"api/auth/roles/{user.userId}", ch.Keys.ToArray());
+
+            //await Task.CompletedTask;
+            navManager.NavigateTo("/adminka/roles");
+            isSaving = false;
+        }
+        else
+        {
+            Logger.LogInformation(messageStore.ToString());
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
+    }
+
+    void Back()
+    {
+        navManager.NavigateTo($"/adminka/roles");
+    }
+}

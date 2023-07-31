@@ -1,0 +1,9 @@
+﻿.listcontainer {
+    width: 95%;
+}
+
+@media (width > 1050px) {
+    .listcontainer {
+        width: 85%;
+    }
+}

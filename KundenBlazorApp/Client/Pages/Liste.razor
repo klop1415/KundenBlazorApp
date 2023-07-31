@@ -1,0 +1,106 @@
+﻿@page "/liste"
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.Extensions.Logging
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager navManager
+@inject ILogger<Liste> Logger
+
+<AuthorizeView>
+    <Authorized>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container-fluid h-100">
+            <h3>Чтобы создавать, редактировать списки и потом выбирать победителей 🥇🥈🥉, надо бы зарегистрироваться на сайте 🤔</h3>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div class="row w-100 gx-4">
+    <div class="col-md-3 order-md-1">
+        <h5>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-columns-reverse" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 0 .5Zm4 0a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1h-10A.5.5 0 0 1 4 .5Zm-4 2A.5.5 0 0 1 .5 2h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5Zm-4 2A.5.5 0 0 1 .5 4h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5Zm-4 2A.5.5 0 0 1 .5 6h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5Zm-4 2A.5.5 0 0 1 .5 8h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5Zm-4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1h-10a.5.5 0 0 1-.5-.5Zm-4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5Zm-4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm4 0a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5Z" />
+            </svg> Ваши списки:
+        </h5>
+        <div class="my-4 ">
+            <button class="btn btn-outline-warning" @onclick="NewList">Создать новый список</button>
+        </div>
+    </div>
+    <div class="col order-sm-2 ">
+        <div class="listcontainer">
+            @if (starnyList is not null)
+            {
+                var k = 0;
+                <div class="stranarow stranarowhead">
+                    <div>№</div>
+                    <div>Дата</div>
+                    <div>Кол</div>
+                </div>
+                foreach (var strana in starnyList)
+                {
+                    k++;
+                    <div class="stranarow" @onclick="@(() => EditTurnir(strana.Id))">
+                        <div>@k</div>
+                        <div>@strana.Date.Value.ToShortDateString()</div>
+                        <div>@strana.List?.Count</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="spinner-border text-info" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-3 order-sm-3 ">
+    </div>
+</div>
+
+@code {
+    List<KundeList>? starnyList { get; set; }
+
+    protected bool IsDisabled { get; set; } = false;
+
+    bool isLoading = false;
+    int idToDelete = 0;
+    int total = 0;
+    string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await UpdateList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex.Message, ex);
+        }
+    }
+
+    async Task UpdateList()
+    {
+        starnyList = await Http.GetFromJsonAsync<List<KundeList>>($"api/kunde/liste");
+    }
+
+    protected async Task NewList()
+    {
+        navManager.NavigateTo($"list");
+    }
+    
+    protected async Task Delete(int id)
+    {
+        idToDelete = id;
+        //dialogService.ShowToast("beim Schlucken tut mir der Hals weh", ToastLevel.Error);
+    }
+
+    protected async Task EditTurnir(int turnirId)
+    {
+        navManager.NavigateTo($"list/{turnirId}");
+    }
+
+}

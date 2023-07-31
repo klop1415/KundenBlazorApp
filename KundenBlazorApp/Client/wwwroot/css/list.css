@@ -1,0 +1,102 @@
+﻿.listcontainer {
+    position: relative;
+    width: 100%;
+    display: flex;
+    margin: auto;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (width > 1050px) {
+    .listcontainer {
+        width: 100%;
+    }
+}
+.stranarow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+}
+
+    .stranarow:nth-child(2n+1) {
+        background-color: var(--table-striped-color1);
+    }
+
+    .stranarow:is(:not(.stranarowhead)):hover {
+        background-color: var(--color2);
+    }
+
+    .stranarow div:nth-child(1) {
+        width: 20px;
+    }
+
+    .stranarow div:nth-child(2) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: .5rem;
+        width: auto;
+    }
+
+    .stranarow div:nth-child(3) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: auto;
+        width: 25%;
+    }
+
+    .stranarow.stranarowhead {
+        padding: 0 0 1rem 0;
+        color: goldenrod;
+    }
+
+.stranarow2 {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    text-align: start;
+    width: 100%;
+    margin: .2rem;
+    cursor: pointer;
+}
+    .stranarow2:nth-child(2n+1) {
+        background-color: var(--table-striped-color1);
+    }
+
+    .stranarow2:is(:not(.stranarowhead)):hover {
+        background-color: var(--color2);
+    }
+
+    .stranarow2 div:nth-child(1) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 20px;
+    }
+
+    .stranarow2 div:nth-child(2) {
+        padding-left: .5rem;
+        width: 30%;
+    }
+
+    .stranarow2 div:nth-child(3) {
+        margin-left: .5rem;
+        width: 60%;
+        text-align: start;
+    }
+
+    .stranarow2.stranarowhead {
+        padding: 0 0 1rem 0;
+        color: goldenrod;
+    }
+
+.wkspan {
+    background-color: var(--bg-color4);
+    color: var(--color1);
+    padding: .2rem;
+    border-radius: .6rem;
+}

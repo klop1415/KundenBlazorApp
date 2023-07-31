@@ -1,0 +1,16 @@
+﻿@page "/authentication/{action}"
+@inject NavigationManager navigationManager
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+<div>@Action</div>
+
+<RemoteAuthenticatorView Action="@Action" />
+
+@code{
+    [Parameter] public string? Action { get; set; }
+    
+    protected override void OnParametersSet()
+    {
+        //navigationManager.NavigateTo("authentication/register");
+    }
+}

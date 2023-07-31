@@ -1,0 +1,328 @@
+﻿@page "/list/{id:int?}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.Extensions.Logging
+@using System.ComponentModel.DataAnnotations;
+@using System.Text.Json;
+
+@inject NavigationManager navManager
+@inject HttpClient httpClient
+@inject ILogger<Index> Logger
+
+<div class="row w-100 gx-4">
+    <div class="col-md-3 order-md-1">
+        <div class="m-1 @dnone">
+            @if (isSaving)
+            {
+                <button class="btn btn-outline-warning text-nowrap text-center w-100" disable>
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div> 
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-danger text-nowrap w-100" @onclick="HandleSubmit">
+                    💾 Сохранить изменения
+                </button>
+            }
+            <div class="">
+                @foreach (var id in DeleteList)
+                {
+                    <div class="">@id</div>
+                }
+            </div>
+            <div class="text-danger">@error</div>
+        </div>
+        <div class="my-4 ">
+            <a class="btn btn-outline-warning w-100" href="liste">
+                ↩️ Назад к спискам
+            </a>
+        </div>
+        <div class="my-4 ">
+            <a class="btn btn-outline-warning w-100" href="#">
+                Загрузить записи 📃 из файла
+            </a>
+        </div>
+        <div class="my-4 ">
+            <button class="btn btn-primary w-100" @onclick="ToCounter">
+                Выбрать победителя из этого списка 🎲
+            </button>
+        </div>
+    </div>
+    <div class="col order-sm-2 ">
+        <div class="listcontainer">
+            @if (KundeList != null && KundeList.List != null)
+            {
+                var k = 0;
+                <div class="stranarow stranarowhead">
+                    <div>№</div>
+                    <div>Фамилия Имя</div>
+                    <div>Телефон</div>
+                    <div>Регион</div>
+                    <div></div>
+                </div>
+                foreach (var strana in KundeList.List)
+                {
+                    k++;
+                    <div class="stranarow">
+                        <div>@k.</div>
+                        <div>
+                            @strana.Name1 @(
+                    string.IsNullOrEmpty(strana.Name2) ? "" : strana.Name2)
+                        </div>
+                        <div>@strana.Numer</div>
+                        <div>@strana.Region</div>
+                        <div>
+                            <button class="btn btn-close" @onclick="()=>Delete(strana)">
+                            </button>
+                        </div>
+                    </div>
+                }
+                @if (newkunde)
+                {
+                    <div class="row g-1 my-1 w-100">
+                        <div class="col-md-7 form-floating mb-2 ">
+                            <input type="text" id="username" class="form-control px-2" placeholder="ФИО"
+                            @bind-value="NewKundeName" @bind-value:event="oninput" />
+                            <label for="username">ФИО</label>
+                        </div>
+                        <div class="col-md-5 form-floating mb-2 ">
+                            <input type="text" id="numer" class="form-control px-2" placeholder="Телефон"
+                            @bind-value="NewKundeNumer" @bind-value:event="oninput" />
+                            <label for="numer">Телефон</label>
+                        </div>
+                    </div>
+                    <div class="d-flex w-100 justify-content-between mb-1 ">
+                        <div class="btn btn-outline-danger w-25 " @onclick="CancelNewKunde">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg> отмена
+                        </div>
+                        <div class="btn btn-outline-success w-25 @enbl" @onclick="SaveNewKunde">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-disc" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="M10 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 4a4 4 0 0 0-4 4 .5.5 0 0 1-1 0 5 5 0 0 1 5-5 .5.5 0 0 1 0 1zm4.5 3.5a.5.5 0 0 1 .5.5 5 5 0 0 1-5 5 .5.5 0 0 1 0-1 4 4 0 0 0 4-4 .5.5 0 0 1 .5-.5z" />
+                            </svg> сохранить
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="my-2 mt-4">
+                        <div class="btn btn-outline-success px-5" @onclick="NewKunde">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
+                                <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                                <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+                            </svg>
+                            добавить запись
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="spantransform">
+                    ⚽
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-3 order-sm-3 ">
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? id { get; set; }
+
+    bool isSaving = false;
+    bool newkunde = false;
+    KundeList? KundeList { get; set; }
+    List<Kunde> AddList { get; set; } = new();
+    List<int> DeleteList { get; set; } = new();
+    KundeList? oldKundeList { get; set; }
+    Kunde? newKunde { get; set; }
+
+    private string newKundeName = "";
+    string? NewKundeName
+    {
+        get { return newKundeName; }
+        set
+        {
+            newKundeName = value;
+            RefreshErrors();
+        }
+    }
+
+    [RegularExpression(@"^[0][1-9]([.][0-9][0-9]){4}", ErrorMessage = "Incorrect phone number !")]
+    private string newKundeNumer = "";
+    string? NewKundeNumer
+    {
+        get { return newKundeNumer; }
+        set
+        {
+            newKundeNumer = value;
+            RefreshErrors();
+        }
+    }
+
+    string message = string.Empty;
+    string? error { get; set; }
+    string dnone = "invisible";
+    string enbl = "disabled";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (id != null)
+        {
+            message = "Редактирование";
+            try
+            {
+                oldKundeList = await httpClient.GetFromJsonAsync<KundeList>($"api/Kunde/list/{id}");
+                KundeList = new()
+                    {
+                        Id = oldKundeList.Id,
+                        Date = oldKundeList.Date,
+                        List = oldKundeList.List
+                    };
+            }
+            catch (Exception ex)
+            {
+                if (oldKundeList is null)
+                {
+                    Logger.LogWarning("oldKunde is null");
+                }
+                Logger.LogWarning(ex.Message, ex);
+            }
+        }
+        else
+        {
+            message = "Создание новой записи";
+            KundeList = new();
+            KundeList.List = new();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        error = null;
+        isSaving = true;
+        try
+        {
+            var response = new HttpResponseMessage();
+            if (id != null)
+            {
+                KundeListDTO dto = new KundeListDTO();
+                dto.Id = (int)id;
+                dto.AddList = AddList;
+                dto.DeleteList = DeleteList;
+                response = await httpClient.PutAsJsonAsync($"api/Kunde/list/{id}", dto);
+            }
+            else
+            {
+                response = await httpClient.PostAsJsonAsync($"api/Kunde/list", KundeList);
+            }
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadFromJsonAsync<Details>();
+                if (content?.errors != null)
+                {
+                    //error = content?.errors.Join();
+                }
+                Logger.LogInformation($"HandleSubmit is INVALID {error}");
+            }
+            else
+            {
+                dnone = "invisible";
+                //ToList();
+            }
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        isSaving = false;
+
+    }
+
+    void ToList()
+    {
+        navManager.NavigateTo("/liste");
+    }
+    
+    void ToCounter()
+    {
+        navManager.NavigateTo($"/counter/{id}");
+    }
+
+    void Delete(Kunde kunde)
+    {
+        if (KundeList?.List != null)
+        {
+            if (!DeleteList.Contains(kunde.Id))
+            {
+                KundeList.List.Remove(kunde);
+                DeleteList.Add(kunde.Id);
+                dnone = "visible";
+            }
+        }
+    }
+
+    void NewKunde()
+    {
+        newkunde = true;
+        newKunde = new();
+        enbl = "disabled";
+        newKundeName = string.Empty;
+        newKundeNumer = string.Empty;
+    }
+
+    void RefreshErrors()
+    {
+        error = string.Empty;
+        enbl = "disabled";
+        if (string.IsNullOrEmpty(NewKundeName))
+        {
+            error += "Имя надо бы внести.";
+        }
+        if (string.IsNullOrEmpty(NewKundeNumer))
+        {
+            error += " Это, а как без телефона то?! никак не получиться(.";
+        }
+        if (string.IsNullOrEmpty(error))
+        {
+            enbl = "";
+        }
+    }
+
+    void SaveNewKunde()
+    {
+        if (KundeList != null && KundeList.List != null)
+        {
+            error = string.Empty;
+            RefreshErrors();
+            if (string.IsNullOrEmpty(error))
+            {
+                newKunde.Name1 = NewKundeName;
+                newKunde.Name2 = "";
+                newKunde.Numer = NewKundeNumer;
+
+                KundeList.List.Add(newKunde);
+                AddList.Add(newKunde);
+                dnone = "visible";
+                CancelNewKunde();
+            }
+        }
+    }
+    
+    void CancelNewKunde()
+    {
+        newkunde = false;
+        newKunde = null;
+    }
+
+}

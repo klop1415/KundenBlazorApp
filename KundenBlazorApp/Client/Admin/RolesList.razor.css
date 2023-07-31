@@ -1,0 +1,37 @@
+﻿.listcontainer {
+    width: 100%;
+    background-color: aquamarine;
+}
+
+@media (width > 1050px) {
+    .listcontainer {
+        width: 85%;
+    }
+}
+
+.stranarow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+    .stranarow:nth-child(2n+1) {
+        background-color: #f6fffe;
+    }
+
+    .stranarow:hover {
+        background-color: lavenderblush;
+    }
+
+    .stranarow div:nth-child(1) {
+        width: 24px;
+    }
+
+    .stranarow div:nth-child(2) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-left: .5rem;
+        width: 70%;
+    }

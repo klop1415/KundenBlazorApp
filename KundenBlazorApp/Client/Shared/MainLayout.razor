@@ -1,0 +1,94 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page g-0 @AnimeClass" data-bs-theme="@ThemeName">
+    <nav class="navbar navbar-expand-lg " id="mynavbar" data-bs-dismiss="offcanvas">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <section class="stage">
+                    <div class="k1 color-effect">★ рандомайзер ★</div>
+                </section>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end " tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
+                <div class="offcanvas-header" data-bs-dismiss="offcanvas">
+                    <h2 class="offcanvas-title color-effect" id="offcanvasDarkNavbarLabel"><bold>★ рандомайзер ★</bold></h2>
+                    <button type="button" class="btn-close " data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body mt-2">
+                    <div class="w-100 d-flex justify-content-start justify-content-lg-end">
+                        <CascadingValue Value="this">
+                            <DropDawnMenu />
+                        </CascadingValue>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <CascadingValue Value="this">
+        <div class="container-fluid d-flex flex-column align-items-center">
+            @Body
+        </div>
+    </CascadingValue>
+
+	<footer class="pt-5 mt-auto">
+		<div class="container">
+			<!-- Divider -->
+			<hr class="mt-4 mb-0">
+
+			<!-- Bottom footer -->
+			<div class="py-3">
+				<div class="container px-0">
+					<div class="d-lg-flex justify-content-between align-items-center py-3 text-center text-md-left">
+						<!-- copyright text -->
+                        <div class="text-primary-hover"> Copyrights <span>©<span>🎲🗑️🔐🔓🎰🌀🪰🐞🕸️⚽🏀🏐🧫🍥🌏🌝🌞🌟🌒❄️🔆☢️🔙</span></span>. All rights reserved. </div>
+						<!-- copyright links-->
+						<div class="justify-content-center mt-3 mt-lg-0">
+							<ul class="nav list-inline justify-content-center mb-0">
+								<li class="list-inline-item"><span>@DateTime.Now.ToShortDateString()</span></li>
+								<li class="list-inline-item"><a class="nav-link pe-0" href="#">Privacy policy</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+</div>
+
+@code{
+    private ThemeInfo theme = new() { ButtonClass = "btn-outline-primary" };
+
+    public string? ThemeName { get; set; } = "light";
+    public string? AnimeClass { get; set; } = "";
+    public string? ButtonClass { get; set; } = "btn-outline-warning";
+
+    public void ChangeToDarkTheme()
+    {
+        if (ButtonClass == "btn-outline-warning")
+            ButtonClass = "btn-outline-danger";
+        else
+            ButtonClass = "btn-outline-warning";
+    }
+
+    public void StartAnime()
+    {
+        ChangeToDarkTheme();
+        AnimeClass = "anime";
+        StateHasChanged();
+    }
+    
+    public void StopAnime()
+    {
+        AnimeClass = "";
+        StateHasChanged();
+    }
+    
+    public void SetTheme(string newtheme)
+    {
+        ThemeName = newtheme;
+        StateHasChanged();
+    }
+}

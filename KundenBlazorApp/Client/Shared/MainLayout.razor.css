@@ -1,0 +1,62 @@
+[data-bs-theme=light] {
+    --bs-light-bg-subtle: hsla(60, 72%, 93%, 0.5);
+    --bs-light-bg-subtle2: hsl(159, 87%, 91%);
+    --bs-light-bg-subtle3: rgb(255,239,202);
+    --bs-bg-cyan: lightyellow;
+    --bs-heading-color: hsl(60, 94%, 7%);
+    --bs-light-bg-subtle: hsla(60, 100%, 88%, 0.5);
+    --bg-color1: hsla(58, 100%, 95%, 0.7);
+    --bg-color2: hsl(60, 100%, 37%);
+    --bg-color3: white;
+    --bg-color4: hsl(60, 100%, 90%);
+    --box-shadow-color: whitesmoke;
+    --form-control-focus-border: hsl(60, 42%, 75%);
+    --form-control-focus-shadow: hsl(60, 100%, 90%);
+    --color1: hsl(60, 94%, 7%);
+    --color2: hsl(52, 57%, 92%);
+    --table-striped-color1: hsla(60, 39%, 80%, 0.1);
+}
+
+[data-bs-theme=dark] {
+    --bs-light-bg-subtle: hsla(60, 84%, 5%, 0.5);
+    --bs-light-bg-subtle2: hsl(159, 87%, 91%);
+    --bs-light-bg-subtle3: rgb(255,239,202);
+    --bs-bg-cyan: lightyellow;
+    --bs-light-bg-subtle: hsla(60, 100%, 88%, 0.5);
+    --bs-heading-color: hsl(60, 94%, 97%);
+    --bg-color1: hsla(60, 88%, 6%, 0.5);
+    --bg-color2: hsl(60, 100%, 37%);
+    --bg-color3: black;
+    --bg-color4: hsl(60, 58%, 27%);
+    --box-shadow-color: hsl(57, 30%, 56%);
+    --form-control-focus-border: hsl(60, 100%, 37%);
+    --form-control-focus-shadow: hsl(60, 79%, 76%);
+    --color1: hsl(60, 73%, 93%);
+    --color2: hsl(60, 96%, 29%);
+    --table-striped-color1: hsla(60, 39%, 80%, 0.1);
+}
+
+.page {
+    position: relative;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient( 45deg, transparent 75%, var(--bg-color1) 75% ), linear-gradient( -45deg, transparent 75%, var(--bg-color1) 75% ), linear-gradient( 135deg, transparent 75%, var(--bg-color1) 75% ), linear-gradient( -135deg, transparent 75%, var(--bg-color1) 75% ), var(--bg-color3);
+    background-size: 50% 50%;
+    color: var(--color1);
+}
+    .page.anime {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    width: min(99%, 600px);
+    margin: 1rem 0;
+    padding: 1rem 2rem;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background-color: var(--bs-light-bg-subtle);
+}

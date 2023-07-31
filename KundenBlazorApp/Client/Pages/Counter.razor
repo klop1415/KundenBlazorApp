@@ -1,0 +1,436 @@
+﻿@page "/counter/{id:int}"
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using System.Timers
+@using Microsoft.Extensions.Logging
+@inject HttpClient httpClient
+@inject NavigationManager navManager
+@implements IDisposable
+@inject ILogger<KundenList> Logger
+
+<div class="row w-100 gx-4">
+    <div class="col-md-3 order-md-1">
+    </div>
+    <div class="col order-sm-2 text-center">
+        <div class="listcontainer">
+            @if (winList is not null)
+            {
+                @if (winList.Count > 0)
+                {
+                    <div class="fs-4 my-1">Список избранных 💥:</div>
+                    <div class="stranarow stranarowhead">
+                        <div>№</div>
+                        <div>Фамилия Имя</div>
+                        <div>Телефон</div>
+                    </div>
+                }
+                var k = 0;
+                foreach (var strana in winList)
+                {
+                    k++;
+                    <div class="stranarow">
+                        <div class="fs-5">@k.</div>
+                        <div class="fs-5">
+                            @strana.Name1 @(
+                    string.IsNullOrEmpty(strana.Name2) ? "" : strana.Name2)
+                        </div>
+                        <div>@strana.Numer</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="spinner-border text-info" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            }
+        </div>
+
+        @if (winList != null)
+        {
+            <div class="d-flex flex-column align-items-center justify-content-center m-4">
+                @if (winList.Count < 3)
+                {
+                    <button class="btn btn-outline-warning btn-lg m-2" @onclick="Randomize">
+                        <span class="mx-2">@titel1</span>
+                        <div style="font-size: 4rem;">🎰</div>
+                    </button>
+                }
+                @if (winList.Count > 0 && !isSaved)
+                {
+                    <button class="btn btn-outline-success btn-lg m-2" @onclick="SaveRound">
+                        Сохранить результаты 🏆</button>
+                }
+            </div>
+            <div class="text-danger">@error</div>
+            <div class="listcontainer ">
+                @if (starnyList is not null)
+                {
+                    @if (!isSaved)
+                    {
+                        <div class="my-1">Список из которого выбираем:</div>
+                        var k = 0;
+                        <div class="stranarow stranarowhead">
+                            <div>№</div>
+                            <div>Фамилия Имя</div>
+                            <div>Телефон</div>
+                            <div>Регион</div>
+                        </div>
+                        foreach (var strana in starnyList)
+                        {
+                            k++;
+                            <div class="stranarow">
+                                <div>@k</div>
+                                <div>
+                                    @strana.Name1 @(
+                          string.IsNullOrEmpty(strana.Name2) ? "" : strana.Name2
+                          )
+                                </div>
+                                <div>@strana.Numer</div>
+                                <div>@strana.Region</div>
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="col-md-3 order-sm-3 ">
+    </div>
+</div>
+
+<div class="@Style1">
+    <div class="animation01">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div class="animation02">
+        <div></div>
+        <div></div>
+    </div>
+    <div class="animation03">
+        <div class="circle">
+            <div class="circle_element01"></div>
+        </div>
+        <div class="circle">
+            <div class="circle_element02"></div>
+        </div>
+        <div class="circle">
+            <div class="circle_element03"></div>
+        </div>
+        <div class="animation04">
+            <div class="line_wrapper line_wrapper01">
+                <span class="line line01"></span>
+            </div>
+            <div class="rotate45">
+                <div class="line_wrapper line_wrapper02">
+                    <span class="line line02"></span>
+                </div>
+            </div>
+            <div class="line_wrapper line_wrapper03">
+                <span class="line line03"></span>
+            </div>
+            <div class="rotate135">
+                <div class="line_wrapper line_wrapper04">
+                    <span class="line line04"></span>
+                </div>
+            </div>
+            <div class="line_wrapper line_wrapper05">
+                <span class="line line05"></span>
+            </div>
+            <div class="rotate-135">
+                <div class="line_wrapper line_wrapper06">
+                    <span class="line line06"></span>
+                </div>
+            </div>
+            <div class="line_wrapper line_wrapper07">
+                <span class="line line07"></span>
+            </div>
+            <div class="rotate-45">
+                <div class="line_wrapper line_wrapper08">
+                    <span class="line line08"></span>
+                </div>
+            </div>
+        </div>
+        <div class="animation05">
+            <div class="double_wrapper02 green02">
+                <div class="double_wrapper01 green01">
+                    <div class="double_block green00"></div>
+                </div>
+            </div>
+            <div class="double_wrapper02 navy02">
+                <div class="double_wrapper01 navy01">
+                    <div class="double_block navy00"></div>
+                </div>
+            </div>
+            <div class="double_wrapper02 yellow02">
+                <div class="double_wrapper01 yellow01">
+                    <div class="double_block yellow00"></div>
+                </div>
+            </div>
+            <div class="double_wrapper02 blue02">
+                <div class="double_wrapper01 blue01">
+                    <div class="double_block blue00"></div>
+                </div>
+            </div>
+            <div class="double_wrapper02 red02">
+                <div class="double_wrapper01 red01">
+                    <div class="double_block red00"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="animation06">
+        <div class="rhombus05">
+            <div class="rhombus04">
+                <div class="rhombus03">
+                    <div class="rhombus02">
+                        <div class="rhombus01"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="animation07">
+        <div class="circle">
+            <div class="circle_element01"></div>
+        </div>
+        <div class="line_wrapper line_wrapper01">
+            <span class="line line01"></span>
+        </div>
+        <div class="rotate60">
+            <div class="line_wrapper line_wrapper02">
+                <span class="line line02"></span>
+            </div>
+        </div>
+        <div class="rotate120">
+            <div class="line_wrapper line_wrapper03">
+                <span class="line line03"></span>
+            </div>
+        </div>
+        <div class="line_wrapper line_wrapper04">
+            <span class="line line04"></span>
+        </div>
+        <div class="rotate-120">
+            <div class="line_wrapper line_wrapper05">
+                <span class="line line05"></span>
+            </div>
+        </div>
+        <div class="rotate-60">
+            <div class="line_wrapper line_wrapper06">
+                <span class="line line06"></span>
+            </div>
+        </div>
+    </div>
+    <div class="animation08">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div class="animation088">
+        <div class="name_plate">
+            <div class="name">@winName<div>@winNumer</div></div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public MainLayout? ThemeInfo { get; set; }
+
+    [Parameter]
+    public int? id { get; set; }
+
+    List<Kunde>? starnyList { get; set; }
+    List<Kunde>? winList { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        _timer = new Timer(1000.0);
+        _timer.Elapsed += NotifyTimerElapsed;
+        rnd = new Random(DateTime.Now.Millisecond);
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        try
+        {
+            UpdateList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex.Message, ex);
+        }
+        base.OnParametersSet();
+    }
+
+    Random rnd = new Random(DateTime.Now.Millisecond);
+    protected bool IsDisabled { get; set; } = false;
+
+    bool isLoading = false;
+    int idToDelete = 0;
+    int total = 0;
+    string message = "";
+    string titel1 = "Выбрать победителя";
+
+    string winName = "";
+    string winNumer = "";
+
+    private Timer _timer = new Timer(1000.0);
+    private TimeSpan testTime;
+    int interval = 1;
+
+    public void SetTimer()
+    {
+        //testTime = TimeSpan.FromMinutes(1);
+        total = 0;
+        //_timer = new Timer(1000.0);
+        //_timer.Elapsed += NotifyTimerElapsed;
+        _timer.Enabled = true;
+        _timer.Start();
+        winName = string.Empty;
+        winNumer = string.Empty;
+
+    }
+
+    private void NotifyTimerElapsed(Object source, ElapsedEventArgs e)
+    {
+        total += 1;
+        message = $"{total}";
+        if (total > 7)
+        {
+            Style1 = "d-none";
+            KillTimer();
+            StateHasChanged();
+        }
+        else
+        if (total > 6)
+        {
+            Style1 = "d-none1";
+            StateHasChanged();
+        }
+        else if (total == 1)
+        {
+            Whal();
+            StateHasChanged();
+        }
+    }
+
+    void Whal()
+    {
+        int k = rnd.Next(starnyList.Count);
+        winName = starnyList[k].Name1;
+        winNumer = starnyList[k].Numer;
+        winList.Add(starnyList[k]);
+        starnyList.RemoveAt(k);
+        titel1 = "Выбрать ещё одного";
+    }
+
+    void KillTimer()
+    {
+        _timer.Enabled = false;
+        _timer.Stop();
+        //_timer.Elapsed -= NotifyTimerElapsed;
+        //_timer.Dispose();
+        ThemeInfo.StopAnime();
+    }
+
+    async Task UpdateList()
+    {
+        if (starnyList is null)
+        {
+            KundeList? kundeList = await httpClient.GetFromJsonAsync<KundeList>($"api/kunde/list/{id}");
+            //KundenListBackDTO? backDTO = await response.Content.ReadFromJsonAsync<KundenListBackDTO>();
+            //KundeList? kundeList = await response.Content.ReadFromJsonAsync<KundeList>();
+
+            starnyList = kundeList?.List;
+
+            //total = backDTO is null ? 0 : backDTO.Total;
+            StateHasChanged();
+        }
+    }
+
+    string error = "";
+    bool isSaving = false;
+    bool isSaved = false;
+
+    protected async Task SaveRound()
+    {
+        isSaving = true;
+        try
+        {
+            var response = new HttpResponseMessage();
+            if (id != null)
+            {
+                ZiehungAuslosungDTO dto = new ZiehungAuslosungDTO();
+                dto.KundeList = id;
+                dto.WinKundeList = winList
+                    .Select(k => k.Id)
+                    .ToList();
+                response = await httpClient.PostAsJsonAsync($"api/Kunde/auslosung", dto);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadFromJsonAsync<Details>();
+                    if (content?.errors != null)
+                    {
+                        error = content?.detail;
+                    }
+                    Logger.LogInformation($"HandleSubmit is INVALID {error}");
+                }
+                else
+                {
+                    isSaved = true;
+                    navManager.NavigateTo("/");
+                    //dnone = "invisible";
+                    //ToList();
+                }
+            }
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        isSaving = false;
+
+    }
+
+    string Style1
+    {
+        get; set;
+    } = "d-none";
+
+    protected async Task Randomize()
+    {
+        Style1 = "";
+        SetTimer();
+        ThemeInfo.StartAnime();
+        //StateHasChanged();
+    }
+
+    void IDisposable.Dispose()
+    {
+        //dialogService.OnHide -= OnHide;
+        _timer.Elapsed -= NotifyTimerElapsed;
+        _timer.Dispose();
+    }
+
+
+    int Func(int total)
+    {
+        double dt = (double)total;
+        return (int)(0.002 * dt * dt - 0.01 * dt);
+    }
+}

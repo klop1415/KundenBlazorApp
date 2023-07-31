@@ -1,0 +1,96 @@
+﻿@page "/register"
+@inject NavigationManager navigationManager
+@inject CustomAuthProvider authStateProvider
+@inject HttpClient httpClient
+@inject ILogger<Register> logger
+
+<EditForm OnValidSubmit="OnSubmit" Model="registerRequest">
+    <DataAnnotationsValidator />
+    <div class="form-container m-auto">
+        <h4>Регистрация на сайте</h4>
+        <div class="row gx-4 mt-2">
+            <div class="col-md-3 position-relative text-center justify-content-center m-0">
+                <div>Аватарочка:</div>
+                <PicsUpload @bind-UploadResult="uploadResult" />
+            </div>
+            <div class="col-md-9 ">
+                <div class="form-floating mb-3">
+                    <InputText type="text" id="username" class="form-control rounded-4" placeholder="Имя"
+                        @bind-Value="@registerRequest.UserName" />
+                    <label for="username">Имя</label>
+                    <ValidationMessage For="@(() => registerRequest.UserName)" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" id="pass" class="form-control rounded-4" placeholder="name@example.com"
+                    @bind-Value="@registerRequest.Password" />
+                    <label for="pass">Пароль</label>
+                    <ValidationMessage For="@(() => registerRequest.Password)" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" id="passconf" class="form-control rounded-4" placeholder="2"
+                        @bind-Value="@registerRequest.PasswordConfirm" />
+                    <label for="passconf">Подтверждение пароля</label>
+                    <ValidationMessage For="@(() => registerRequest.PasswordConfirm)" />
+                </div>
+                <small class="text-muted text-center mb-3">Создавая аккаунт, ты будешь жить по нашим правилам!</small>
+            </div>
+        </div>
+        <label class="text-danger ms-4"><h4><strong>@error</strong></h4></label>
+        <div class="d-flex justify-content-center mt-2">
+            @if (loading)
+            {
+                <div class="spinner-border text-info mx-auto" role="status">
+                    <span class="visually-hidden">Saving...</span>
+                </div>
+            }
+            else
+            {
+                <button class="btn btn-outline-primary px-4" type="submit">Сохранить</button>
+            }
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public UploadResult? uploadResult { get; set; }
+
+    RegisterRequest registerRequest { get; set; } = new RegisterRequest();
+
+    string error { get; set; }
+    bool loading = false;
+
+    async Task OnSubmit()
+    {
+        error = null;
+        loading = true;
+        try
+        {
+            if (uploadResult is not null && uploadResult.ErrorCode > 0)
+            {
+                error = uploadResult.ErrorMessage;
+                throw new Exception(uploadResult.ErrorMessage);
+            }
+
+            uploadResult = await UploadResult.UploadFile(httpClient, uploadResult);
+
+            if (uploadResult is not null && uploadResult.ErrorCode > 0)
+                throw new Exception("не загрузился файл");
+
+            registerRequest.Avatar = uploadResult?.StoredFileName;
+
+            await authStateProvider.Register(registerRequest);
+
+            navigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            string str = ex.Message;
+            error = str.Contains("is already taken") ? "Это имя уже занято!" : str;
+        }
+        loading = false;
+    }
+
+    private bool shouldRender;
+    protected override bool ShouldRender() => shouldRender;
+
+}

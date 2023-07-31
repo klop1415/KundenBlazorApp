@@ -1,0 +1,181 @@
+﻿@page "/kunde/{id:int?}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.Extensions.Logging
+@implements IDisposable
+@inject NavigationManager navManager
+@inject HttpClient httpClient
+@inject ILogger<Index> Logger
+
+<div class="d-flex justify-content-center">
+<div class="listcontainer">
+
+@if (Kunde != null)
+{
+    <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <div class="form-container m-auto">
+            <h4>@message</h4>
+            <div class="row gx-4 mt-2">
+                <div class="col-md-9 ">
+                    <div class="mb-3">
+                        <label for="username" class="form-label mb-0">Фамилия:</label>
+                        <InputText type="text" id="username" class="form-control rounded-4" placeholder="Фамилия"
+                        @bind-Value="@Kunde.Name1" />
+                        <ValidationMessage For="@(() => Kunde.Name1)" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="pass" class="form-label mb-0">Имя</label>
+                        <InputText type="text" id="pass" class="form-control rounded-4" placeholder="Имя"
+                        @bind-Value="@Kunde.Name2" />
+                        <ValidationMessage For="@(() => Kunde.Name2)" />
+                    </div>
+                    <div class="row">
+                        <div class="col-7">
+                            <label for="passconf" class="form-label mb-0">Телефон</label>
+                            <InputText type="text" id="passconf" class="form-control rounded-4" placeholder="Телефон"
+                            @bind-Value="@Kunde.Numer" />
+                            <ValidationMessage For="@(() => Kunde.Numer)" />
+                        </div>
+                    </div>
+                    <div class="text-danger ms-4"><h5>@error</h5></div>
+                </div>
+            </div>
+            <div class="d-flex mt-2">
+                @if (loading)
+                {
+                    <div class="spinner-border text-info mx-auto" role="status">
+                        <span class="visually-hidden">Saving...</span>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-outline-primary px-2 mx-2" type="button" @onclick="ToList">Назад к списку</button>
+                    <button class="btn btn-outline-warning px-2 mx-2" type="submit">Сохранить</button>
+                }
+            </div>
+        </div>
+    </EditForm>
+}
+else
+{
+    <div>NO Kunde</div>
+}
+</div>
+</div>
+
+@code {
+    [Parameter]
+    public int? id { get; set; }
+
+    KundeDTO? Kunde { get; set; }
+    Kunde? oldKunde { get; set; }
+
+    string message = string.Empty;
+    string? error { get; set; }
+    bool loading = false;
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (id != null)
+        {
+            message = "Редактирование записи";
+            try
+            {
+                oldKunde = await httpClient.GetFromJsonAsync<Kunde>($"api/Kunde/{id}");
+                Kunde = new()
+                    {
+                        Id = oldKunde.Id,
+                        Name1 = oldKunde.Name1,
+                        Name2 = oldKunde.Name2,
+                        Name3 = oldKunde.Name3,
+                        Numer = oldKunde.Numer,
+                        Region = oldKunde.Region
+                    };
+            }
+            catch (Exception ex)
+            {
+                if (oldKunde is null)
+                {
+                    Logger.LogWarning("oldKunde is null");
+                }
+                Logger.LogWarning(ex.Message, ex);
+            }
+        }
+        else
+        {
+            message = "Создание новой записи";
+            Kunde = new();
+        }
+        editContext = new(Kunde);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+        if (string.IsNullOrEmpty(Kunde?.Numer))
+        {
+            messageStore?.Add(() => Kunde.Numer, "телефон то не ввёл!");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (editContext != null && editContext.Validate())
+        {
+            error = null;
+            loading = true;
+            try
+            {
+                var response = new HttpResponseMessage();
+                if (id != null)
+                {
+                    response = await httpClient.PutAsJsonAsync($"api/Kunde/{id}", Kunde);
+                }
+                else
+                {
+                    response = await httpClient.PostAsJsonAsync($"api/Kunde", Kunde);
+                }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadFromJsonAsync<Details>();
+                    error = content?.detail;
+                }
+                else
+                {
+                    ToList();
+                }
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            loading = false;
+        }
+        else
+        {
+            Logger.LogInformation("HandleSubmit called: Strana is INVALID");
+        }
+    }
+
+    void ToList()
+    {
+        navManager.NavigateTo("/kunden");
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
+    }
+
+}

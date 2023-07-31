@@ -1,0 +1,28 @@
+﻿.image {
+    display: inline-block;
+    object-fit: contain;
+    max-width: 100%;
+}
+
+.v-center2 {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 10rem;
+    margin: auto;
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 1px dashed lightblue;
+    background-color: var(--bs-light-bg-subtle);
+}
+
+.closebtn {
+    position: relative;
+    margin: auto;
+    cursor: pointer;
+    color: blue;
+}
+
+    .closebtn:hover {
+        color: red;
+    }

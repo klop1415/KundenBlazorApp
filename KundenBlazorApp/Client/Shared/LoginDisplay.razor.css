@@ -1,0 +1,46 @@
+﻿.img0 {
+    display: inline-block;
+    right: 0;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin: -.5rem 0;
+    border-radius: 50%;
+    box-shadow: 0px 0px 12px LightGray;
+}
+
+.nav-item {
+    font-size: 1.2rem;
+    padding-bottom: 0.5rem;
+}
+
+    .nav-item:first-of-type {
+        padding-top: 1rem;
+    }
+
+    .nav-item:last-of-type {
+        padding-bottom: 1rem;
+    }
+
+    .nav-item ::deep a {
+        color: navy;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: left;
+        margin: 0 0 0 1rem;
+        line-height: 3rem;
+        border-radius: 2rem 0 0 2rem;
+    }
+
+        .nav-item ::deep a.active {
+            background-color: white;
+            color: navy;
+        }
+
+        .nav-item ::deep a:hover {
+            background-color: rgb(255, 255, 170);
+        }
+
+        .nav-item ::deep a.active:hover {
+            background-color: white;
+        }

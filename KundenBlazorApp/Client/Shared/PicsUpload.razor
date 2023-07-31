@@ -1,0 +1,97 @@
+﻿@inject ILogger<PicsUpload> Logger
+
+<div class="justify-content-center">
+    <div class="v-center2">
+        <InputFile OnChange="OnInputFileChanged" class="position-absolute bg-warning h-100"
+                   style="opacity:0;" />
+        @if (!string.IsNullOrEmpty(imageDataUrl))
+        {
+            <img src="@imageDataUrl" class="image" alt="...">
+            <button type="button" class="btn-close closebtn"
+                    data-bs-toggle="tooltip" data-bs-placement="bottom" title="убрать картинку"
+            @onclick="Close"
+            @onclick:stopPropagation="true"
+            @onclick:preventDefault="true"></button>
+        }
+        else
+        {
+            <span class="m-1 my-4">Можно перетянуть файл сюда</span>
+        }
+    </div>
+</div>
+<span class="m-2 text-danger">@message</span>
+
+@code {
+    [Parameter]
+    public UploadResult? UploadResult { get; set; }
+    [Parameter]
+    public EventCallback<UploadResult> UploadResultChanged { get; set; }
+
+    string format = "image/jpeg";
+    string message = "";
+    string imageDataUrl { get; set; } = string.Empty;
+
+    private static string DefaultDragClass = "d-flex rounded-5 p-1 m-1 w-100";
+    private string DragClass = DefaultDragClass;
+
+    private bool shouldRender = true;
+    protected override bool ShouldRender() => shouldRender;
+
+
+    private async Task OnInputFileChanged(InputFileChangeEventArgs e)
+    {
+        message = "";
+        shouldRender = false;
+
+        Logger.LogWarning($"File.ContentType: {e.File.ContentType}");
+
+        if (e.File is not null)
+        {
+            if (e.File.Size > UploadResult.FileMaxSize)
+            {
+                UploadResult = new()
+                    {
+                        File = null,
+                        FileName = string.Empty,
+                        StoredFileName = string.Empty,
+                        ErrorCode = 1,
+                        ErrorMessage =
+                                    $"Размер файла должен быть меньше {(UploadResult.FileMaxSize / 1000000)} мб",
+                        Uploaded = false
+                    };
+                imageDataUrl = string.Empty;
+                message = UploadResult.ErrorMessage;
+            }
+            else
+            {
+                var file = e.File;
+                if (UploadResult == null || file.Name != UploadResult.FileName)
+                {
+                    UploadResult = new()
+                        {
+                            File = file,
+                            FileName = file.Name,
+                            StoredFileName = string.Empty,
+                            ErrorCode = 0,
+                            ErrorMessage = string.Empty,
+                            Uploaded = false
+                        };
+
+                    var buffer = new byte[file.Size];
+                    await file.OpenReadStream(maxAllowedSize: UploadResult.FileMaxSize).ReadAsync(buffer);
+                    imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+                }
+            }
+            await UploadResultChanged.InvokeAsync(UploadResult);
+        }
+        shouldRender = true;
+    }
+
+    async Task Close()
+    {
+        UploadResult = null;
+        imageDataUrl = string.Empty;
+        await UploadResultChanged.InvokeAsync(UploadResult);
+    }
+
+}
